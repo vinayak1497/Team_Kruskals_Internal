@@ -94,7 +94,7 @@ export default function LoginPage() {
     setError('');
 
     const cleanPhone = phone.replace(/\s+/g, '');
-    const result = await auth.sendOtp(cleanPhone);
+    const result = await auth.sendOtp(cleanPhone, selectedRole || 'citizen');
     setIsLoading(false);
 
     if (result.success) {
@@ -112,7 +112,7 @@ export default function LoginPage() {
     setError('');
 
     const cleanPhone = phone.replace(/\s+/g, '');
-    const result = await auth.verifyOtp(cleanPhone, otp);
+    const result = await auth.verifyOtp(cleanPhone, otp, selectedRole || 'citizen');
     setIsLoading(false);
 
     if (result.success) {
@@ -148,10 +148,10 @@ export default function LoginPage() {
     const cleanPhone = role.phone.replace(/\s+/g, '');
 
     // Send OTP
-    await auth.sendOtp(cleanPhone);
+    await auth.sendOtp(cleanPhone, role.id);
 
     // Auto-verify with demo OTP
-    const result = await auth.verifyOtp(cleanPhone, '123456');
+    const result = await auth.verifyOtp(cleanPhone, '123456', role.id);
     setIsLoading(false);
 
     if (result.success) {
@@ -367,6 +367,12 @@ export default function LoginPage() {
           <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'center', flexWrap: 'wrap' }}>
             <button className="btn btn-outline btn-sm" onClick={() => handleQuickDemo(roles.find(r => r.id === 'cm'))} id="demo-cm">
               🏛️ CM View
+            </button>
+            <button className="btn btn-outline btn-sm" onClick={() => handleQuickDemo(roles.find(r => r.id === 'district_officer'))} id="demo-dm">
+              🏢 DM View
+            </button>
+            <button className="btn btn-outline btn-sm" onClick={() => handleQuickDemo(roles.find(r => r.id === 'department_manager'))} id="demo-dept">
+              📋 Dept View
             </button>
             <button className="btn btn-outline btn-sm" onClick={() => handleQuickDemo(roles.find(r => r.id === 'officer'))} id="demo-officer">
               👷 Officer View

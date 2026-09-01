@@ -108,8 +108,8 @@ async function refreshAccessToken() {
 
 // === AUTH ===
 export const auth = {
-  sendOtp: (mobile) => request('/auth/send-otp', { method: 'POST', body: JSON.stringify({ mobile }) }),
-  verifyOtp: (mobile, otp) => request('/auth/verify-otp', { method: 'POST', body: JSON.stringify({ mobile, otp }) }),
+  sendOtp: (mobile, role) => request('/auth/send-otp', { method: 'POST', body: JSON.stringify({ mobile, role }) }),
+  verifyOtp: (mobile, otp, role) => request('/auth/verify-otp', { method: 'POST', body: JSON.stringify({ mobile, otp, role }) }),
   logout: () => request('/auth/logout', { method: 'POST' }),
   me: () => request('/auth/me'),
 };

@@ -5,6 +5,7 @@ const { sendOTP } = require('../services/sms');
 const JWT_SECRET = process.env.JWT_SECRET || 'vaani-jwt-secret-change-in-production';
 const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET || 'vaani-refresh-secret-change-in-production';
 const DEMO_MODE = process.env.DEMO_MODE === 'true';
+const ALLOWED_ROLES = new Set(['citizen', 'officer', 'department_manager', 'district_officer', 'nodal_officer', 'commissioner', 'cm_staff', 'cm', 'super_admin']);
 
 function generateTokens(user) {
   const accessToken = jwt.sign(
@@ -22,17 +23,26 @@ function generateTokens(user) {
 
 exports.sendOtp = async (req, res) => {
   try {
-    const { mobile } = req.body;
+    const { mobile, role } = req.body;
     if (!mobile) return res.status(400).json({ error: 'Mobile number required' });
 
+    const requestedRole = ALLOWED_ROLES.has(role) ? role : 'citizen';
     let user = await User.findOne({ mobile });
 
-    // Auto-create citizen if not exists
+    if (user && user.role !== requestedRole) {
+      user.role = requestedRole;
+      if (!user.name || ['Citizen', 'User'].includes(user.name)) {
+        user.name = requestedRole === 'citizen' ? 'Citizen' : requestedRole === 'officer' ? 'Field Officer' : requestedRole === 'district_officer' ? 'District Magistrate' : requestedRole === 'department_manager' ? 'Dept Manager' : requestedRole === 'cm' ? 'Chief Minister' : 'User';
+      }
+      await user.save();
+    }
+
+    // Auto-create a role-aware demo user if not exists
     if (!user) {
       user = await User.create({
-        name: 'Citizen',
+        name: requestedRole === 'citizen' ? 'Citizen' : requestedRole === 'officer' ? 'Field Officer' : requestedRole === 'district_officer' ? 'District Magistrate' : requestedRole === 'department_manager' ? 'Dept Manager' : requestedRole === 'cm' ? 'Chief Minister' : 'User',
         mobile,
-        role: 'citizen',
+        role: requestedRole,
       });
     }
 
@@ -58,11 +68,20 @@ exports.sendOtp = async (req, res) => {
 
 exports.verifyOtp = async (req, res) => {
   try {
-    const { mobile, otp } = req.body;
+    const { mobile, otp, role } = req.body;
     if (!mobile || !otp) return res.status(400).json({ error: 'Mobile and OTP required' });
 
-    const user = await User.findOne({ mobile });
+    const requestedRole = ALLOWED_ROLES.has(role) ? role : null;
+    let user = await User.findOne({ mobile });
     if (!user) return res.status(404).json({ error: 'User not found' });
+
+    if (requestedRole && user.role !== requestedRole) {
+      user.role = requestedRole;
+      if (!user.name || ['Citizen', 'User'].includes(user.name)) {
+        user.name = requestedRole === 'citizen' ? 'Citizen' : requestedRole === 'officer' ? 'Field Officer' : requestedRole === 'district_officer' ? 'District Magistrate' : requestedRole === 'department_manager' ? 'Dept Manager' : requestedRole === 'cm' ? 'Chief Minister' : 'User';
+      }
+      await user.save();
+    }
 
     // Verify OTP
     if (user.otp !== otp) return res.status(401).json({ error: 'Invalid OTP' });
