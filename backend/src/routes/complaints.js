@@ -3,6 +3,49 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const authorize = require('../middleware/rbac');
 const c = require('../controllers/complaintController');
+const { extractComplaintFromChat, generateChatbotResponse, validateExtractedComplaint } = require('../services/chatbotService');
+
+// Chatbot routes (citizen-accessible)
+router.post('/chatbot/extract', auth, authorize('citizen', 'super_admin'), async (req, res) => {
+  try {
+    const { message } = req.body;
+    if (!message || message.trim().length === 0) {
+      return res.status(400).json({ error: 'Message cannot be empty' });
+    }
+
+    const extracted = await extractComplaintFromChat(message);
+    const validated = validateExtractedComplaint(extracted.extracted);
+
+    res.json({
+      success: true,
+      extracted: validated,
+      confidence: extracted.confidence,
+      suggestSubmit: validated.isValid && !validated.missingFields.includes('address')
+    });
+  } catch (error) {
+    console.error('Chatbot extract error:', error);
+    res.status(500).json({ error: error.message || 'Failed to extract complaint details' });
+  }
+});
+
+router.post('/chatbot/message', auth, authorize('citizen', 'super_admin'), async (req, res) => {
+  try {
+    const { message, history = [] } = req.body;
+    if (!message || message.trim().length === 0) {
+      return res.status(400).json({ error: 'Message cannot be empty' });
+    }
+
+    const response = await generateChatbotResponse(message, history);
+
+    res.json({
+      success: true,
+      response
+    });
+  } catch (error) {
+    console.error('Chatbot message error:', error);
+    res.status(500).json({ error: error.message || 'Failed to generate response' });
+  }
+});
 
 // Public-ish (needs auth)
 router.post('/', auth, c.fileComplaint);

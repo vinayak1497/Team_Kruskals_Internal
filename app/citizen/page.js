@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { COMPLAINT_CATEGORIES, DELHI_DISTRICTS } from '@/data/complaints';
 import { complaints as complaintsApi, resources, clearToken, getStoredUser } from '../lib/api';
 import { getSocket, connectSocket } from '../lib/socket';
+import ComplaintChatbot from '../components/ComplaintChatbot';
 
 export default function CitizenPortal() {
   const router = useRouter();
@@ -254,6 +255,21 @@ export default function CitizenPortal() {
     } else {
       setComplaintImage(null);
     }
+  };
+
+  const handleChatbotExtract = (extractedData) => {
+    // Populate form with extracted data
+    setFormData(prev => ({
+      ...prev,
+      name: extractedData.name || prev.name,
+      category: extractedData.category || prev.category,
+      district: extractedData.district || prev.district,
+      address: extractedData.address || prev.address,
+      description: extractedData.description || prev.description,
+    }));
+    
+    // Show confirmation message
+    setFilingError('');
   };
 
   const handleFileSubmit = async (e) => {
@@ -1074,6 +1090,9 @@ export default function CitizenPortal() {
           </div>
         )}
       </div>
+
+      {/* Complaint Chatbot */}
+      <ComplaintChatbot onExtract={handleChatbotExtract} />
     </div>
   );
 }

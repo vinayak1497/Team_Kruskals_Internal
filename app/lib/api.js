@@ -137,6 +137,8 @@ export const complaints = {
   myComplaints: () => request('/complaints/my'),
   officerQueue: () => request('/complaints/officer/queue'),
   duplicateCheck: (lat, lng, category) => request(`/complaints/duplicate-check?lat=${lat}&lng=${lng}&category=${category}`),
+  chatbotExtract: (message) => request('/complaints/chatbot/extract', { method: 'POST', body: JSON.stringify({ message }) }),
+  chatbotMessage: (message, history = []) => request('/complaints/chatbot/message', { method: 'POST', body: JSON.stringify({ message, history }) }),
 };
 
 // === ANALYTICS ===

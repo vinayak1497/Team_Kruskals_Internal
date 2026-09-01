@@ -54,6 +54,7 @@ export const DELHI_DISTRICTS = [
   { id: 'south_east', name: 'South East Delhi / दक्षिण पूर्वी दिल्ली', lat: 28.5635, lng: 77.2875 },
   { id: 'south_west', name: 'South West Delhi / दक्षिण पश्चिमी दिल्ली', lat: 28.5500, lng: 77.0920 },
   { id: 'west', name: 'West Delhi / पश्चिमी दिल्ली', lat: 28.6517, lng: 77.0517 },
+  { id: 'other', name: 'Other Location / अन्य स्थान', lat: 19.2183, lng: 72.9781 },
 ];
 
 export const DEPARTMENTS = [
